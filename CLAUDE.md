@@ -35,15 +35,24 @@ using dynamic workflows to parallelize component builds. Deploy to Databricks Ap
 - Python: always run through `uv`. Git commits as `datasciencemonkey@gmail.com`.
 - The bar is **executive-ready visual quality** — match `requirements/assets/` design grammar.
 
-## Starting from the remote (fresh machine or session)
+## Starting a build session (two equally valid entry points)
 
+**A) From this existing local folder** (common case): everything is already here — verify the
+`9cefok` profile is valid, make sure you're at the pristine baseline (`git status` clean on
+`main`; if a previous run left work behind, reset per "Run hygiene & reset" below), then paste
+the /goal block above.
+
+**B) From a fresh machine/folder:**
 ```
 git clone https://github.com/datasciencemonkey/gamify-monday-morning.git
 cd gamify-monday-morning
 databricks auth profiles | grep 9cefok   # login if not YES (see Hard rules)
 ```
-Then paste the /goal block above. The clone IS the start point — `main` is the pristine
-baseline (tag `v0-baseline-data-ready`).
+Then paste the /goal block above.
+
+Either way the start point is identical: `main` = pristine baseline (tag
+`v0-baseline-data-ready`). Note for local starts: `quick-brief.mov` and `extraction/` media are
+untracked extras that exist only locally — ignore them; no build step needs them.
 
 ## Run hygiene & reset
 
