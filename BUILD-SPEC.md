@@ -155,6 +155,8 @@ Run as an orchestrated workflow; parallelize aggressively. Suggested phases:
 
 ## 7. Reset / re-run protocol
 
+Remote start point: `https://github.com/datasciencemonkey/gamify-monday-morning.git` —
+`main` = pristine baseline; build on a `run/<name>` branch, never push build output to main.
 The git tag **`v0-baseline-data-ready`** is the checkpoint: requirements + data generator + this
 spec, with data already in UC (data survives git resets — it lives in Databricks). To re-run the
 30-minute build from scratch: `git reset --hard v0-baseline-data-ready && git clean -fd` (the

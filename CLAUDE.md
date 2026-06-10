@@ -35,7 +35,19 @@ using dynamic workflows to parallelize component builds. Deploy to Databricks Ap
 - Python: always run through `uv`. Git commits as `datasciencemonkey@gmail.com`.
 - The bar is **executive-ready visual quality** — match `requirements/assets/` design grammar.
 
-## Reset between runs
+## Starting from the remote (fresh machine or session)
 
-`git reset --hard v0-baseline-data-ready && git clean -fd` returns the repo to the pristine
-pre-build state (UC data and untracked media survive). Re-runnable any number of times.
+```
+git clone https://github.com/datasciencemonkey/gamify-monday-morning.git
+cd gamify-monday-morning
+databricks auth profiles | grep 9cefok   # login if not YES (see Hard rules)
+```
+Then paste the /goal block above. The clone IS the start point — `main` is the pristine
+baseline (tag `v0-baseline-data-ready`).
+
+## Run hygiene & reset
+
+- Do build work on a branch per run (`git checkout -b run/<name>`) and push the branch if you
+  want to keep it. **Never push build output to `main`** — main stays the start point.
+- Reset locally between runs: `git reset --hard v0-baseline-data-ready && git clean -fd`
+  (UC data and untracked media survive). Or just re-clone. Re-runnable any number of times.
