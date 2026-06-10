@@ -9,8 +9,13 @@ GENIE_MCP_URL = os.environ.get(
 
 
 def _token(obo_token: str | None) -> str:
+    """Auth chain (user directive): user's X-Forwarded-Access-Token first (captures the user),
+    then the GENIE_PAT secret (downscoped OBO tokens 403 on the workspace MCP), then ambient."""
     if obo_token:
         return obo_token
+    pat = os.environ.get("GENIE_PAT")
+    if pat:
+        return pat
     from .db import _ambient_config
     return _ambient_config().oauth_token().access_token
 
@@ -41,15 +46,26 @@ GROUNDING = ("Answer strictly from the serverless_9cefok_catalog.monday_morning 
              "dim_store, dim_product, dim_date; current month = 2025-12). Question: ")
 
 
+def _call_resilient(tool: str, args: dict, obo_token: str | None) -> dict:
+    """Use the user's forwarded token when the MCP accepts it; on 401/403 (downscoped app
+    tokens are rejected by the workspace MCP) retry with the PAT/ambient chain."""
+    try:
+        return _call(tool, args, obo_token)
+    except httpx.HTTPStatusError as e:
+        if obo_token and e.response.status_code in (401, 403):
+            return _call(tool, args, None)
+        raise
+
+
 def ask(question: str, conversation_id: str | None = None, obo_token: str | None = None) -> dict:
     # The workspace-level Genie MCP routes across all data the caller can see; ground the
     # first turn of every conversation so answers come from the Monday Morning schema.
     args: dict = {"question": question if conversation_id else GROUNDING + question}
     if conversation_id:
         args["conversation_id"] = conversation_id
-    return _call("genie_ask", args, obo_token)
+    return _call_resilient("genie_ask", args, obo_token)
 
 
 def poll(conversation_id: str, response_id: str, obo_token: str | None = None) -> dict:
-    return _call("genie_poll_response",
+    return _call_resilient("genie_poll_response",
                  {"conversation_id": conversation_id, "response_id": response_id}, obo_token)
