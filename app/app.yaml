@@ -1,5 +1,7 @@
 command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
 env:
+  - name: GENIE_PAT
+    valueFrom: genie-pat
   - name: WAREHOUSE_ID
     value: "66fba25b212c4d4c"
   - name: MM_SCHEMA
