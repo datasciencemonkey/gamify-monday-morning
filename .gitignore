@@ -13,3 +13,5 @@ app/frontend/dist/
 app/.venv/
 app/.deploy/
 nohup.out
+.gstack/
+app/static/

@@ -57,7 +57,9 @@ databricks auth profiles | grep 9cefok   # login if not YES (see Hard rules)
 Then paste the /goal block above.
 
 Either way the start point is identical: `main` = pristine baseline (tag
-`v0-baseline-data-ready`). Note for local starts: `quick-brief.mov` and `extraction/` media are
+`v0-baseline-data-ready`). **For the timed conference run, start from the tag
+`v1-conference-start` instead** (pre-built foundation + checked-in workflow scripts; the live
+build is components → deploy → QA, ~22 min measured — see BUILD-SPEC §8). Note for local starts: `quick-brief.mov` and `extraction/` media are
 untracked extras that exist only locally — ignore them; no build step needs them.
 
 ## Run hygiene & reset

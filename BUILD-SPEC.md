@@ -163,3 +163,35 @@ spec, with data already in UC (data survives git resets — it lives in Databric
 video/extraction artifacts are untracked and survive). Data is deterministic — if the schema is
 ever damaged, `cd data && uv run python generate.py` rebuilds identical tables (~3 min). Do NOT
 edit `requirements/`, `data/`, or this spec during a build run.
+
+## 8. Timed-run playbook (measured 2026-06-10; this is how the run fits in 30 minutes)
+
+Start from the tag **`v1-conference-start`** (branch `conference-start`): data live in UC, app
+foundation pre-built (FastAPI backend with all queries tested, app shell, typed API client,
+design tokens, component stubs), every infrastructure pitfall already fixed. The live build is
+the component fan-out + deploy + QA — the part worth watching.
+
+| Phase | What | Measured |
+|---|---|---|
+| 0 | Auth check + `npm install` in `app/frontend` (parallel with reading spec) | ~2 min |
+| 1 | Component workflow: `Workflow({scriptPath: "app/workflows/components.js"})` — 7 parallel agents + tsc/build fixer | **12.7 min measured** |
+| 2 | `cd app && ./deploy.sh` (build output staged, workspace delete + import-dir, apps deploy) | ~4 min measured |
+| 3 | Smoke + visual QA (browse screenshots vs `requirements/assets/`) | ~3 min |
+| | **Total critical path** | **~22 min** |
+
+Optional post-run: critique workflow `app/workflows/critique.js` (~11 min — quality gate, not
+part of the 30-minute window).
+
+### Errata already baked in (do not re-discover)
+- `backend/db.py`: token acquisition is lock-serialized (concurrent CLI refreshes corrupt the
+  token cache) with one retry; metrics are cache-warmed at startup.
+- `backend/genie.py`: every new Genie conversation is grounded to the `monday_morning` schema
+  (the workspace MCP otherwise routes to other data).
+- `deploy.sh`: stages OUTSIDE the repo (gitignore otherwise empties `databricks sync`) and
+  always `workspace delete --recursive` + `workspace import-dir` (user directive).
+- App must carry `user_api_scopes: ["sql", "dashboards.genie"]` (set on the `monday-morning`
+  app) — without them Genie 502s on the deployed app; users consent on first open.
+- `metrics.py movers()`: underperformers = YoY between 200-1200% ordered by plan gap;
+  new items = `new_item_pct=100` with MoM >= +20% — these reproduce the reference lists exactly.
+- Genie answer rendering: format currency/percent cells, humanize snake_case headers
+  (raw floats in chat tables are the most exec-visible defect).
