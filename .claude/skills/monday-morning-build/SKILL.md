@@ -50,7 +50,9 @@ canonical UI/AI ground truth with reference screenshots in `requirements/assets/
    Databricks Genie") is the one the workspace MCP requires**;
    (c) tokens minted before a scope change keep failing until the user **re-consents** (reopen app).
    → Auth chain in `backend/genie.py`: forwarded `X-Forwarded-Access-Token` → **on 401/403 retry
-   with `GENIE_PAT`** → ambient SP. The retry-on-403 is load-bearing; keep it.
+   with `GENIE_PAT`** → ambient SP. The retry-on-403 is load-bearing; keep it. **Verified live:**
+   with the `genie` scope consented, `auth_leg: user-obo` — the user's own token serves Genie
+   directly; the PAT only covers pre-consent sessions and rejected programmatic tokens.
 4. **`apps update` silently wipes config** → the update REPLACES whole field sets → always send
    `user_api_scopes` AND `resources` together in one `--json`.
 5. **"Cannot deploy/update: update in progress"** → the platform serializes app updates → retry
