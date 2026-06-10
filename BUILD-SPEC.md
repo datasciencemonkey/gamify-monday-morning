@@ -189,8 +189,12 @@ part of the 30-minute window).
   (the workspace MCP otherwise routes to other data).
 - `deploy.sh`: stages OUTSIDE the repo (gitignore otherwise empties `databricks sync`) and
   always `workspace delete --recursive` + `workspace import-dir` (user directive).
-- App must carry `user_api_scopes: ["sql", "dashboards.genie"]` (set on the `monday-morning`
-  app) — without them Genie 502s on the deployed app; users consent on first open.
+- Genie auth on the deployed app: chain is user's `X-Forwarded-Access-Token` → on 401/403
+  fall back to the `GENIE_PAT` secret (app resource `genie-pat` ← secret scope
+  `monday-morning/genie_pat`; env `valueFrom` in app.yaml) → ambient SP. The workspace MCP
+  rejects downscoped OBO tokens (403), so the PAT fallback is what makes in-app Genie work.
+  Keep `user_api_scopes: ["sql", "dashboards.genie"]` AND the secret resource together — an
+  apps update replaces the whole field set, so always send both in one update.
 - `metrics.py movers()`: underperformers = YoY between 200-1200% ordered by plan gap;
   new items = `new_item_pct=100` with MoM >= +20% — these reproduce the reference lists exactly.
 - Genie answer rendering: format currency/percent cells, humanize snake_case headers
