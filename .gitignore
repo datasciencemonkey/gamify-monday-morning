@@ -1,0 +1,10 @@
+.DS_Store
+.omc/
+quick-brief.mov
+extraction/audio/
+extraction/frames/
+data/.venv/
+__pycache__/
+*.pyc
+node_modules/
+.databricks/

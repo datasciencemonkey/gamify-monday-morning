@@ -1,0 +1,32 @@
+start	end	text
+0	3600	So here's what I want to build and deploy as a Databricks app.
+3600	8600	So what we have here is a UI design for Monday morning reports,
+8600	11640	for CPG retail and sites for executives.
+11640	16160	So we want to replicate practically everything that you see in the screen here,
+16160	21200	total sales, comps, store sales, etc, etc.
+21200	25960	This Ask Genie button should trigger off a request to Genie,
+25960	29840	but Genie, I'll give you the specifics around the Genie MCP and whatnot.
+30080	33520	But the idea here is that it is going to give you an executive brief and we can
+33520	37480	generate the brief here by clicking this button and it should show you very
+37480	41400	quickly what that looks like, you know, in generally, like what does it actually
+41400	47320	mean, right? And then we also have these monthly to sales trends, sales by
+47320	52360	category, the KPIs for individual categories, the top movers, the end-up
+52360	59760	performers, you know, the new items, average basket size, conversion rate,
+59760	63600	private label, fill rate, etc, and inventory health by store.
+63600	66560	So we have this thing here going on.
+66560	71160	And then we also have a small tab here that shows you the breakdown by individual
+71160	77960	product. For every product we have, we have, you know, this sort of like this,
+78840	85160	bubble chart with the map and, you know, individual locations, you know, being
+85160	90600	shown out here for that, for that category, subcategories, queued or drill
+90600	94040	down. And then we also have some executive briefs here.
+94040	96880	If we need to add that later on, we can do that.
+96880	103000	We also have, you know, Monday morning, I asked Genie here, which is basically all
+103000	106840	the questions, all the things here are going to culminate into a question that
+106840	111880	you can ask here in the chat for the Monday morning.
+111880	117720	What I want to do is specifically want to build out this exact same capability
+117720	121320	directly on Databricks and deploy that into Databricks.
+121320	126760	We need to figure out the required requirements for this.
+126760	132520	So what I mean when I say that is that we can make up the data, we can do
+132520	138920	practically, you know, generate synthetic data for all these things and then go
+138920	146680	from there. So I would like to see how the kind of PRD that you can write
+146680	150280	against this information, right?
