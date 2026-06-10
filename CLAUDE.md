@@ -5,9 +5,11 @@ a build session's only job is the app itself.
 
 ## Start here
 
-1. **Read `BUILD-SPEC.md`** — the complete build mission: environment, stack, data contracts,
-  AI integration, 30-minute plan, acceptance criteria.
-2. Canonical specs live in `requirements/` (DASH/AI/FR IDs) with reference screenshots in
+1. **Invoke the project skill `monday-morning-build`** (`.claude/skills/monday-morning-build/`)
+  — full runbook, environment constants, and every known gotcha. Fastest correct path.
+2. **Read `BUILD-SPEC.md`** — the build mission: environment, stack, data contracts,
+  AI integration, acceptance criteria (§6).
+3. Canonical specs live in `requirements/` (DASH/AI/FR IDs) with reference screenshots in
   `requirements/assets/`. Treat them as read-only ground truth.
 
 ## Suggested kickoff for a build session
