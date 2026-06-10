@@ -11,6 +11,28 @@ app = FastAPI(title="Monday Morning API")
 STATIC = os.path.join(os.path.dirname(__file__), "..", "static")
 
 
+@app.on_event("startup")
+def warm_cache():
+    """Prefetch every dashboard query so first paint serves from cache (demo-fast)."""
+    import threading
+
+    def _warm():
+        for fn in (metrics.exec_kpis, metrics.trend, metrics.category_sales,
+                   metrics.category_kpis, metrics.movers, metrics.secondary,
+                   metrics.inventory, metrics.drilldown, metrics.brief):
+            try:
+                fn()
+            except Exception:
+                pass
+        for c in ("Food Storage", "Shoe Care", "Home Cleaning", "Air Care", "Pest Control"):
+            try:
+                metrics.store_comparison("category", c)
+            except Exception:
+                pass
+
+    threading.Thread(target=_warm, daemon=True).start()
+
+
 def _tok(req: Request) -> str | None:
     return req.headers.get("x-forwarded-access-token")
 
