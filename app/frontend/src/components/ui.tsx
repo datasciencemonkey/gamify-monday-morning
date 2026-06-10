@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Sparkles, Search } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`card ${className}`}>{children}</div>
@@ -8,7 +8,7 @@ export function Card({ children, className = '' }: { children: ReactNode; classN
 export function AskGenie({ onAsk }: { onAsk: () => void }) {
   return (
     <button className="ask-genie" onClick={onAsk}>
-      <Search size={11} strokeWidth={2.5} /> Ask Genie
+      <Sparkles size={11} strokeWidth={2.2} /> Ask Genie
     </button>
   )
 }

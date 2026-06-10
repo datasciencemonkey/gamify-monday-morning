@@ -24,7 +24,7 @@ export default function App() {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-line">
-        <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-3 px-5 text-[12px]">
+        <div className="mx-auto flex h-12 max-w-[1060px] items-center gap-3 px-5 text-[12px]">
           <button className="flex items-center gap-1 text-sub hover:text-ink"><ChevronLeft size={14} /> Back</button>
           <span className="flex items-center gap-1.5 font-bold text-[13px]">
             <Boxes size={16} className="text-brand" /> databricks
@@ -44,7 +44,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1280px] px-5 pb-16">
+      <main className="mx-auto max-w-[1060px] px-5 pb-16">
         <div className="flex items-start justify-between pt-6">
           <div>
             <h1 className="text-[26px] font-extrabold tracking-tight">Monday Morning</h1>
@@ -59,7 +59,7 @@ export default function App() {
           {TABS.map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`rounded-md px-3.5 py-1.5 font-medium transition ${tab === t
-                ? t === 'AI Genie' ? 'bg-warn text-white shadow-sm' : 'bg-white shadow-sm border border-line'
+                ? t === 'AI Genie' ? 'bg-[#e5a33c] text-white shadow-sm' : 'bg-white shadow-sm border border-line'
                 : 'text-sub hover:text-ink'}`}>
               {t === 'AI Genie' ? <span className="flex items-center gap-1"><Sparkles size={11} /> AI Genie</span> : t}
             </button>

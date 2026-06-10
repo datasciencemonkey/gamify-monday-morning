@@ -54,21 +54,26 @@ def category_kpis(tok=None) -> list[dict]:
 def movers(tok=None) -> dict:
     top = q(f"""WITH d AS (SELECT sku_id, sum(sales_amt) s FROM {{S}}.fact_sales WHERE month='{CUR}' GROUP BY 1),
         y AS (SELECT sku_id, sum(sales_amt) s FROM {{S}}.fact_sales WHERE month='{PY_CUR}' GROUP BY 1)
-        SELECT p.product_name, p.category, round(d.s,0) sales, round((d.s/y.s-1)*100,1) pct
+        SELECT p.product_name, p.category, p.sku_id, round(d.s,0) sales, round((d.s/y.s-1)*100,1) pct
         FROM d JOIN y USING(sku_id) JOIN {{S}}.dim_product p USING(sku_id)
         WHERE y.s > 0 ORDER BY pct DESC LIMIT 5""", tok)
+    # Underperformers (DASH-8): late-2024 launches tracking far below their ramp trajectory -
+    # the mid-band YoY growers (movers are >1200%, mature items <100%), worst plan-gap first.
     under = q(f"""WITH d AS (SELECT sku_id, sum(sales_amt) s, sum(plan_amt) pl
             FROM {{S}}.fact_sales WHERE month='{CUR}' GROUP BY 1),
         y AS (SELECT sku_id, sum(sales_amt) s FROM {{S}}.fact_sales WHERE month='{PY_CUR}' GROUP BY 1)
-        SELECT p.product_name, p.category, round(d.s,0) sales, round((d.s/y.s-1)*100,1) pct
+        SELECT p.product_name, p.category, p.sku_id, round(d.s,0) sales, round((d.s/y.s-1)*100,1) pct
         FROM d JOIN y USING(sku_id) JOIN {{S}}.dim_product p USING(sku_id)
-        WHERE y.s > 0 ORDER BY (d.s - d.pl) ASC LIMIT 5""", tok)
+        WHERE y.s > 0 AND (d.s/y.s-1)*100 BETWEEN 200 AND 1200
+        ORDER BY (d.s - d.pl) ASC LIMIT 5""", tok)
     under = sorted(under, key=lambda r: r["pct"])
+    # New Items (DASH-8): new SKUs ramping fast month-over-month (>= +20% MoM).
     new = q(f"""WITH d AS (SELECT sku_id, sum(sales_amt) s FROM {{S}}.fact_sales WHERE month='{CUR}' GROUP BY 1),
         m AS (SELECT sku_id, sum(sales_amt) s FROM {{S}}.fact_sales WHERE month='{PREV}' GROUP BY 1)
-        SELECT p.product_name, p.category, round(d.s,0) sales, round((d.s/m.s-1)*100,1) pct
+        SELECT p.product_name, p.category, p.sku_id, round(d.s,0) sales, round((d.s/m.s-1)*100,1) pct
         FROM d JOIN m USING(sku_id) JOIN {{S}}.dim_product p USING(sku_id)
-        WHERE p.new_item_pct = 100 AND m.s > 0 ORDER BY d.s DESC LIMIT 5""", tok)
+        WHERE p.new_item_pct = 100 AND m.s > 0 AND d.s/m.s - 1 >= 0.20
+        ORDER BY d.s DESC LIMIT 5""", tok)
     return {"top_movers": top, "underperformers": under, "new_items": new}
 
 
@@ -120,7 +125,7 @@ def drilldown(tok=None) -> list[dict]:
                 "promo_lift": round(r["promo_lift"], 1), "trip_conv": round(r["trip_conv"], 1),
                 "basket_att": round(r["basket_att"], 1),
                 "dpl": round(r["sales"] / 12 / r["lf"], 2) if r["lf"] else 0,
-                "new_pct": round(r["new_pct"]),
+                "new_pct": round(r["new_pct"], 1),
                 "in_stock": iv.get("in_stock", 0), "dos": iv.get("dos", 0)}
 
     def rollup(rows: list[dict]) -> dict:
@@ -133,7 +138,7 @@ def drilldown(tok=None) -> list[dict]:
                 "promo_lift": w("promo_lift"), "trip_conv": w("trip_conv"),
                 "basket_att": w("basket_att"),
                 "dpl": round(s / 12 / sum(r["lf"] for r in rows), 2),
-                "new_pct": round(sum(r["new_pct"] for r in rows) / len(rows)),
+                "new_pct": round(sum(r["new_pct"] for r in rows) / len(rows), 1),
                 "in_stock": round(sum(inv.get(r["product_name"], {}).get("in_stock", 0) for r in rows) / len(rows), 1),
                 "dos": round(sum(inv.get(r["product_name"], {}).get("dos", 0) for r in rows) / len(rows), 1)}
 
@@ -198,7 +203,7 @@ def brief(tok=None) -> dict:
     headline = (f"Total sales reached ${total:,.0f} this month with an average margin of {avg_margin}%, "
                 f"reflecting broad category momentum. {top['category']} leads all categories at "
                 f"${top['dec']:,.0f} in sales{' but is the only category trailing, down ' + str(abs(top['mom'])) + '% month-over-month' if top['mom'] < 0 else ''}. "
-                f"{'All other categories - ' + ', '.join(c['category'] for c in cats[1:]) + ' - posted positive month-over-month growth.' if len(declining) == 1 and declining[0] is top else ''}")
+                f"{'All other categories — ' + others + ' — posted positive month-over-month growth.' if len(declining) == 1 and declining[0] is top else ''}")
     detail = (f"{top['category']}, while the highest-revenue category at ${top['dec']:,.0f}, "
               f"{'is the sole drag on portfolio growth at ' + str(top['mom']) + '% MoM and warrants immediate attention. ' if top['mom'] < 0 else 'continues to lead. '}"
               + " ".join(f"{c['category']} posted {'+' if c['mom'] >= 0 else ''}{c['mom']}% MoM at a {c['margin']}% margin." for c in cats[1:])

@@ -17,8 +17,8 @@
 body { @apply bg-cream text-ink antialiased; font-family: -apple-system, "Segoe UI", Inter, Helvetica, Arial, sans-serif; }
 
 .card { @apply bg-card border border-line rounded-xl shadow-[0_1px_2px_rgba(40,35,25,0.04)]; }
-.metric-label { @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-sub; }
-.ask-genie { @apply text-[11px] font-medium text-genie/80 hover:text-genie inline-flex items-center gap-1 cursor-pointer select-none; }
+.metric-label { @apply text-[10.5px] font-semibold uppercase tracking-[0.06em] text-sub whitespace-nowrap; }
+.ask-genie { @apply whitespace-nowrap text-[11px] font-medium text-genie/80 hover:text-genie inline-flex items-center gap-1 cursor-pointer select-none; }
 .tone-good { @apply text-good; }
 .tone-bad { @apply text-bad; }
 .tone-neutral { @apply text-sub; }

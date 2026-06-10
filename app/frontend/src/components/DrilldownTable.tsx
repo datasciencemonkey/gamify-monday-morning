@@ -2,7 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { api, fmtMoney, fmtPct } from '../lib/api'
 import type { CategoryRow, SkuRow, SubcatRow } from '../lib/api'
-import { Card, Spinner } from './ui'
+import { AskGenie, Card, Spinner, deltaClass } from './ui'
 import StoreComparison from './StoreComparison'
 
 type Level = 'category' | 'subcategory'
@@ -35,8 +35,8 @@ function MetricCells({ m }: { m: Metrics }) {
     <>
       <td className={`${NUM} font-semibold`}>{fmtMoney(m.sales)}</td>
       <td className={NUM}>{m.units.toLocaleString()}</td>
-      <td className={`${NUM} tone-bad font-medium`}>{fmtPct(m.vs_plan)}</td>
-      <td className={`${NUM} tone-good font-medium`}>{fmtPct(m.vs_py)}</td>
+      <td className={`${NUM} ${deltaClass(m.vs_plan)} font-medium`}>{fmtPct(m.vs_plan)}</td>
+      <td className={`${NUM} ${deltaClass(m.vs_py)} font-medium`}>{fmtPct(m.vs_py)}</td>
       <td className={NUM}>{m.margin}%</td>
       <td className={`${NUM}${m.in_stock < 80.5 ? ' tone-bad font-medium' : ''}`}>{m.in_stock}%</td>
       <td className={NUM}>{m.dos.toFixed(1)}</td>
@@ -53,7 +53,6 @@ const rowCls = (selected: boolean) =>
   `cursor-pointer border-t border-line transition-colors ${selected ? 'bg-cream/80' : 'hover:bg-cream/40'}`
 
 export default function DrilldownTable({ openGenie }: { openGenie: (title: string, prompt: string) => void }) {
-  void openGenie // part of the mount contract in App.tsx; drill-down has no Ask Genie affordance
   const [rows, setRows] = useState<CategoryRow[] | null>(null)
   const [failed, setFailed] = useState(false)
   const [openCats, setOpenCats] = useState<Set<string>>(new Set())
@@ -93,7 +92,20 @@ export default function DrilldownTable({ openGenie }: { openGenie: (title: strin
 
   return (
     <div>
-      <h2 className="mb-3 text-[15px] font-bold text-ink">Category → Subcategory → SKU Drill-Down</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-[15px] font-bold text-ink">Category → Subcategory → SKU Drill-Down</h2>
+        {rows && rows.length > 0 && (
+          <AskGenie
+            onAsk={() => {
+              const top = rows[0]
+              openGenie(
+                'Category Drill-Down',
+                `Across the drill-down, ${top.category} leads at $${Math.round(top.sales).toLocaleString('en-US')} but tracks ${(top.vs_plan * 100).toFixed(1)}% vs plan. Identify the subcategories and SKUs driving the gap and recommend corrective actions.`,
+              )
+            }}
+          />
+        )}
+      </div>
 
       {failed ? (
         <Card>
@@ -190,7 +202,7 @@ export default function DrilldownTable({ openGenie }: { openGenie: (title: strin
 
       {sel && (
         <div className="mt-5">
-          <StoreComparison level={sel.level} name={sel.name} key={sel.level + sel.name} />
+          <StoreComparison level={sel.level} name={sel.name} openGenie={openGenie} key={sel.level + sel.name} />
         </div>
       )}
     </div>

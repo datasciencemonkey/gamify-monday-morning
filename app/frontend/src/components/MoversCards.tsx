@@ -10,9 +10,10 @@ function MoverList({ rows, pctClass, fmtPctRow }: {
   return (
     <div className="divide-y divide-line/70 px-5 pb-3">
       {rows.slice(0, 5).map(r => (
-        <div
+        <a
           key={r.product_name}
-          className="-mx-2 flex items-start justify-between rounded px-2 py-2.5 cursor-pointer hover:bg-cream/70"
+          href={`#/demand/sku/${r.sku_id}`}
+          className="-mx-2 flex items-start justify-between rounded px-2 py-2.5 cursor-pointer no-underline text-inherit hover:bg-cream/70"
         >
           <div className="min-w-0 pr-3">
             <div className="truncate text-[12px] font-semibold">{r.product_name}</div>
@@ -22,7 +23,7 @@ function MoverList({ rows, pctClass, fmtPctRow }: {
             <div className="text-[12px] font-bold">{fmtMoney(r.sales)}</div>
             <div className={`text-[11px] ${pctClass}`}>{fmtPctRow(r.pct)}</div>
           </div>
-        </div>
+        </a>
       ))}
     </div>
   )

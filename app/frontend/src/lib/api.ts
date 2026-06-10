@@ -11,7 +11,7 @@ export type CategoryKpi = {
   basket_attach_pct: number; dollars_per_linear_foot: number; planogram_compliance_pct: number;
   new_items_launched: number; new_items_successful: number;
 }
-export type MoverRow = { product_name: string; category: string; sales: number; pct: number }
+export type MoverRow = { product_name: string; category: string; sales: number; pct: number; sku_id: string }
 export type Movers = { top_movers: MoverRow[]; underperformers: MoverRow[]; new_items: MoverRow[] }
 export type Secondary = {
   avg_basket: number; avg_items: number; conversion_rate: number; nps: number;

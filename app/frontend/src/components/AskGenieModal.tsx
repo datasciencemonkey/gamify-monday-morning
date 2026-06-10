@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { SendHorizonal, X } from 'lucide-react'
+import { SendHorizonal, Sparkles, X } from 'lucide-react'
 import { api, type GenieResp } from '../lib/api'
-import { Card, GenieIcon } from './ui'
+import { Card } from './ui'
 
 export type GenieCtx = { title: string; prompt: string }
 
@@ -32,6 +32,25 @@ function renderInline(text: string, keyBase: string): ReactNode[] {
   }
   if (last < text.length) nodes.push(text.slice(last))
   return nodes
+}
+
+const cleanNum = (s: string) => s.trim().replace(/[$,%]/g, '')
+
+const isNumericCell = (s: string) => {
+  const c = cleanNum(s)
+  return c !== '' && /^-?\d+(\.\d+)?$/.test(c)
+}
+
+function formatCell(cell: string, header: string): string {
+  if (!isNumericCell(cell)) return cell
+  const cleaned = cleanNum(cell)
+  const num = Number(cleaned)
+  const h = header.toLowerCase()
+  if (h.includes('pct') || h.includes('%')) return `${num.toFixed(1)}%`
+  if (/(sales|margin|amount|amt|revenue)/.test(h)) return `$${Math.round(num).toLocaleString('en-US')}`
+  const decimals = (cleaned.split('.')[1] ?? '').length
+  if (decimals > 2) return num.toLocaleString('en-US', { maximumFractionDigits: 2 })
+  return cell
 }
 
 export function GenieMarkdown({ text }: { text: string }) {
@@ -74,23 +93,42 @@ export function GenieMarkdown({ text }: { text: string }) {
         if (!isSep) rows.push(cells)
         i += 1
       }
-      blocks.push(
-        <div key={blocks.length} className="overflow-x-auto">
-          <table className="my-1 border-collapse text-[11px]">
-            <tbody>
-              {rows.map((r, ri) => (
-                <tr key={ri} className={ri === 0 ? 'bg-cream/70 font-semibold' : ''}>
-                  {r.map((c, ci) => (
-                    <td key={ci} className="border border-line px-2 py-1 align-top">
-                      {renderInline(c, `c${ri}-${ci}`)}
-                    </td>
+      if (rows.length > 0) {
+        const [header, ...body] = rows
+        const colNumeric = header.map((_, ci) => body.some(r => isNumericCell(r[ci] ?? '')))
+        blocks.push(
+          <div key={blocks.length} className="overflow-x-auto">
+            <table className="my-1 w-full border-collapse text-[11px]">
+              <thead>
+                <tr className="border-b border-line bg-cream/60">
+                  {header.map((c, ci) => (
+                    <th
+                      key={ci}
+                      className={`whitespace-nowrap px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-sub ${colNumeric[ci] ? 'text-right' : 'text-left'}`}
+                    >
+                      {c.replace(/_/g, ' ')}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )
+              </thead>
+              <tbody>
+                {body.map((r, ri) => (
+                  <tr key={ri} className="border-b border-line last:border-b-0">
+                    {r.map((c, ci) => (
+                      <td
+                        key={ci}
+                        className={`px-2 py-1 align-top ${isNumericCell(c) ? 'whitespace-nowrap text-right' : 'text-left'}`}
+                      >
+                        {isNumericCell(c) ? formatCell(c, header[ci] ?? '') : renderInline(c, `c${ri}-${ci}`)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
       continue
     }
     if (/^#{2,}/.test(t)) {
@@ -100,6 +138,22 @@ export function GenieMarkdown({ text }: { text: string }) {
         </div>
       )
       i += 1
+      continue
+    }
+    if (/^[-*]\s+/.test(t)) {
+      const items: string[] = []
+      const start = i
+      while (i < lines.length && /^[-*]\s+/.test(lines[i].trim())) {
+        items.push(lines[i].trim().replace(/^[-*]\s+/, ''))
+        i += 1
+      }
+      blocks.push(
+        <ul key={blocks.length} className="my-1 list-disc space-y-1 pl-4 text-[12px] leading-relaxed">
+          {items.map((it, ii) => (
+            <li key={ii}>{renderInline(it, `li${start}-${ii}`)}</li>
+          ))}
+        </ul>
+      )
       continue
     }
     if (t === '') {
@@ -119,10 +173,10 @@ export function GenieMarkdown({ text }: { text: string }) {
 
 function TypingDots() {
   return (
-    <div className="flex w-fit items-center gap-1 rounded-lg border border-line bg-white px-3 py-2.5">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-genie" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-genie [animation-delay:160ms]" />
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-genie [animation-delay:320ms]" />
+    <div className="flex w-fit items-center gap-1 rounded-lg bg-[#eceef2] px-3 py-2.5">
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ink/60" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ink/60 [animation-delay:160ms]" />
+      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-ink/60 [animation-delay:320ms]" />
     </div>
   )
 }
@@ -210,11 +264,11 @@ export default function AskGenieModal({ ctx, onClose }: { ctx: GenieCtx | null; 
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/35 pt-24 backdrop-blur-[1px]"
       onClick={onClose}
     >
-      <div className="w-[600px] max-w-[94vw]" onClick={e => e.stopPropagation()}>
+      <div className="w-[480px] max-w-[94vw]" onClick={e => e.stopPropagation()}>
         <Card className="flex max-h-[68vh] w-full flex-col overflow-hidden shadow-2xl">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <div className="flex items-center gap-1.5 text-[12.5px] font-bold">
-              <GenieIcon /> Ask Genie: {ctx.title}
+              <Sparkles size={13} strokeWidth={2.2} className="text-genie" /> Ask Genie: {ctx.title}
             </div>
             <button onClick={onClose} aria-label="Close" className="text-sub hover:text-ink">
               <X size={15} />
@@ -250,7 +304,7 @@ export default function AskGenieModal({ ctx, onClose }: { ctx: GenieCtx | null; 
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Ask a follow-up question…"
-              className="flex-1 rounded-lg border border-line px-3 py-2 text-[12px] outline-genie"
+              className="flex-1 rounded-lg border border-line px-3 py-2 text-[12px] outline-none focus:border-genie focus:ring-2 focus:ring-genie/15"
             />
             <button
               type="submit"

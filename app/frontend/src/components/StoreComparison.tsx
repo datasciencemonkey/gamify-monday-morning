@@ -4,7 +4,7 @@ import { MapPin } from 'lucide-react'
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from 'react-leaflet'
 import { api, fmtMoney } from '../lib/api'
 import type { StoreComp } from '../lib/api'
-import { Card, Spinner } from './ui'
+import { AskGenie, Card, Spinner } from './ui'
 
 // leaflet ships no bundled .d.ts (and @types/leaflet is not installed), so the
 // react-leaflet props inherited from leaflet's option types (center, zoom,
@@ -29,7 +29,20 @@ const bandColor = (inStock: number | null) =>
     : inStock !== null && inStock >= 80 ? '#e8a13d'
     : '#e0312b'
 
-export default function StoreComparison({ level, name }: { level: 'category' | 'subcategory'; name: string }) {
+// Round up to a "nice" axis maximum (1/2/2.5/5 × 10^n).
+const niceCeil = (v: number) => {
+  const pow = 10 ** Math.floor(Math.log10(v))
+  const unit = v / pow
+  const mult = unit <= 1 ? 1 : unit <= 2 ? 2 : unit <= 2.5 ? 2.5 : unit <= 5 ? 5 : 10
+  return mult * pow
+}
+const fmtTick = (v: number) => (v >= 1000 ? `$${+(v / 1000).toFixed(1)}K` : `$${Math.round(v)}`)
+
+export default function StoreComparison({ level, name, openGenie }: {
+  level: 'category' | 'subcategory'
+  name: string
+  openGenie: (title: string, prompt: string) => void
+}) {
   const [data, setData] = useState<StoreComp | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -56,6 +69,19 @@ export default function StoreComparison({ level, name }: { level: 'category' | '
 
   const stores = data.stores
   const maxSales = Math.max(1, ...stores.map(s => s.sales))
+  const axisMax = niceCeil(maxSales)
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map(f => f * axisMax)
+
+  const askDispersion = () => {
+    const top = data.top_store
+    const lead = top
+      ? `${top.store_name} leads at $${Math.round(top.sales).toLocaleString('en-US')} (${top.share}% of total)`
+      : 'sales are spread across all 15 stores'
+    openGenie(
+      `Store Comparison: ${name}`,
+      `For the ${level} "${name}", ${lead}. Explain the dispersion in store-level sales across the 15 stores and recommend specific actions to lift the bottom stores.`,
+    )
+  }
 
   return (
     <Card>
@@ -69,15 +95,18 @@ export default function StoreComparison({ level, name }: { level: 'category' | '
             {level === 'category' ? 'Category' : 'Subcategory'} · current month sales across all 15 stores
           </p>
         </div>
-        {data.top_store && (
-          <div className="text-right">
-            <div className="metric-label">Top store</div>
-            <div className="text-[12px] font-bold text-ink">{data.top_store.store_name}</div>
-            <div className="text-[11px] text-sub">
-              {fmtMoney(data.top_store.sales)} · {data.top_store.share}% of total
+        <div className="flex items-start gap-4">
+          {data.top_store && (
+            <div className="text-right">
+              <div className="metric-label">Top store</div>
+              <div className="text-[12px] font-bold text-ink">{data.top_store.store_name}</div>
+              <div className="text-[11px] text-sub">
+                {fmtMoney(data.top_store.sales)} · {data.top_store.share}% of total
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          <AskGenie onAsk={askDispersion} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-5 px-5 pb-5">
@@ -128,19 +157,35 @@ export default function StoreComparison({ level, name }: { level: 'category' | '
           <div className="mb-2">
             <span className="metric-label">Sales by Store (Sorted)</span>
           </div>
-          <div className="pt-1">
+          <div className="relative pt-1">
+            {/* subtle vertical gridlines behind the bars (bar area starts after w-32 label + gap-2) */}
+            <div className="pointer-events-none absolute inset-y-0 left-[8.5rem] right-0">
+              {[25, 50, 75].map(p => (
+                <span key={p} className="absolute inset-y-0 w-px bg-line/70" style={{ left: `${p}%` }} />
+              ))}
+            </div>
             {stores.map(s => (
               <div key={s.store_name} className="mb-1.5 flex items-center gap-2">
                 <span className="w-32 shrink-0 truncate text-right text-[10px] text-sub">{s.store_name}</span>
                 <div className="min-w-0 flex-1">
                   <div
                     className="h-3.5 rounded-r bg-brand hover:opacity-80"
-                    style={{ width: `${Math.max(4, (s.sales / maxSales) * 100)}%` }}
+                    style={{ width: `${Math.max(4, (s.sales / axisMax) * 100)}%` }}
                     title={`${s.store_name} — Sales: ${fmtMoney(s.sales)}`}
                   />
                 </div>
               </div>
             ))}
+            <div className="flex items-center gap-2">
+              <span className="w-32 shrink-0" />
+              <div className="min-w-0 flex-1 border-t border-line pt-1">
+                <div className="flex justify-between text-[9px] text-sub">
+                  {ticks.map(tv => (
+                    <span key={tv}>{fmtTick(tv)}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

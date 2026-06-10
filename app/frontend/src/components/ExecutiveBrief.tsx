@@ -9,8 +9,8 @@ const MIN_GENERATING_MS = 1200
 const sleep = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms))
 
 const chipBox = (tone: BriefChip['tone']) =>
-  tone === 'good' ? 'border-good/40 bg-good/5'
-    : tone === 'bad' ? 'border-bad/40 bg-bad/5'
+  tone === 'good' ? 'border-good/30 bg-[#d8f3e3]'
+    : tone === 'bad' ? 'border-bad/30 bg-[#fbdcdc]'
     : 'border-line'
 
 const chipValue = (tone: BriefChip['tone']) =>
