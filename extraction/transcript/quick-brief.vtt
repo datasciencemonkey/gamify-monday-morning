@@ -1,0 +1,95 @@
+WEBVTT
+
+00:00.000 --> 00:03.600
+So here's what I want to build and deploy as a Databricks app.
+
+00:03.600 --> 00:08.600
+So what we have here is a UI design for Monday morning reports,
+
+00:08.600 --> 00:11.640
+for CPG retail and sites for executives.
+
+00:11.640 --> 00:16.160
+So we want to replicate practically everything that you see in the screen here,
+
+00:16.160 --> 00:21.200
+total sales, comps, store sales, etc, etc.
+
+00:21.200 --> 00:25.960
+This Ask Genie button should trigger off a request to Genie,
+
+00:25.960 --> 00:29.840
+but Genie, I'll give you the specifics around the Genie MCP and whatnot.
+
+00:30.080 --> 00:33.520
+But the idea here is that it is going to give you an executive brief and we can
+
+00:33.520 --> 00:37.480
+generate the brief here by clicking this button and it should show you very
+
+00:37.480 --> 00:41.400
+quickly what that looks like, you know, in generally, like what does it actually
+
+00:41.400 --> 00:47.320
+mean, right? And then we also have these monthly to sales trends, sales by
+
+00:47.320 --> 00:52.360
+category, the KPIs for individual categories, the top movers, the end-up
+
+00:52.360 --> 00:59.760
+performers, you know, the new items, average basket size, conversion rate,
+
+00:59.760 --> 01:03.600
+private label, fill rate, etc, and inventory health by store.
+
+01:03.600 --> 01:06.560
+So we have this thing here going on.
+
+01:06.560 --> 01:11.160
+And then we also have a small tab here that shows you the breakdown by individual
+
+01:11.160 --> 01:17.960
+product. For every product we have, we have, you know, this sort of like this,
+
+01:18.840 --> 01:25.160
+bubble chart with the map and, you know, individual locations, you know, being
+
+01:25.160 --> 01:30.600
+shown out here for that, for that category, subcategories, queued or drill
+
+01:30.600 --> 01:34.040
+down. And then we also have some executive briefs here.
+
+01:34.040 --> 01:36.880
+If we need to add that later on, we can do that.
+
+01:36.880 --> 01:43.000
+We also have, you know, Monday morning, I asked Genie here, which is basically all
+
+01:43.000 --> 01:46.840
+the questions, all the things here are going to culminate into a question that
+
+01:46.840 --> 01:51.880
+you can ask here in the chat for the Monday morning.
+
+01:51.880 --> 01:57.720
+What I want to do is specifically want to build out this exact same capability
+
+01:57.720 --> 02:01.320
+directly on Databricks and deploy that into Databricks.
+
+02:01.320 --> 02:06.760
+We need to figure out the required requirements for this.
+
+02:06.760 --> 02:12.520
+So what I mean when I say that is that we can make up the data, we can do
+
+02:12.520 --> 02:18.920
+practically, you know, generate synthetic data for all these things and then go
+
+02:18.920 --> 02:26.680
+from there. So I would like to see how the kind of PRD that you can write
+
+02:26.680 --> 02:30.280
+against this information, right?
+
