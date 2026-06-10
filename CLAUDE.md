@@ -14,14 +14,18 @@ a build session's only job is the app itself.
 
 ## Suggested kickoff for a build session
 
-Run a goal with dynamic workflows:
+Run a goal that names the skill (the skill is the *how*; the goal is the *enforcement* — the
+session cannot stop until the condition holds):
 
 ```
-/goal Build and deploy the Monday Morning CPG Retail Insights app exactly per BUILD-SPEC.md,
-using dynamic workflows to parallelize component builds. Deploy to Databricks Apps (profile
-9cefok), pass all 8 acceptance criteria in BUILD-SPEC §6, and finish executive-ready in under
-30 minutes. ultracode
+/goal Build and deploy the Monday Morning CPG Retail Insights app by invoking the
+monday-morning-build skill and following it exactly, using dynamic workflows for the
+component build. Deploy to Databricks Apps (profile 9cefok), pass all 8 acceptance criteria
+in BUILD-SPEC §6, and finish executive-ready in under 30 minutes. ultracode
 ```
+
+Saying just "monday morning build" also works (CLAUDE.md routes there), but you lose the
+stop-hook guarantee that the session finishes the job.
 
 ## Hard rules
 
