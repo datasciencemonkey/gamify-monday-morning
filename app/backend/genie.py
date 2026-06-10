@@ -47,13 +47,16 @@ GROUNDING = ("Answer strictly from the serverless_9cefok_catalog.monday_morning 
 
 
 def _call_resilient(tool: str, args: dict, obo_token: str | None) -> dict:
-    """Use the user's forwarded token when the MCP accepts it; on 401/403 (downscoped app
-    tokens are rejected by the workspace MCP) retry with the PAT/ambient chain."""
+    """Use the user's forwarded token when the MCP accepts it; on 401/403 (tokens missing the
+    `genie` scope are rejected by the workspace MCP) retry with the PAT/ambient chain.
+    Annotates which credential leg served (`auth_leg`) for observability."""
+    fallback_leg = "pat" if os.environ.get("GENIE_PAT") else "ambient-sp"
     try:
-        return _call(tool, args, obo_token)
+        res = _call(tool, args, obo_token)
+        return {**res, "auth_leg": "user-obo" if obo_token else fallback_leg}
     except httpx.HTTPStatusError as e:
         if obo_token and e.response.status_code in (401, 403):
-            return _call(tool, args, None)
+            return {**_call(tool, args, None), "auth_leg": f"{fallback_leg}-after-obo-403"}
         raise
 
 
