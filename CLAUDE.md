@@ -23,6 +23,11 @@ using dynamic workflows to parallelize component builds. Deploy to Databricks Ap
 
 ## Hard rules
 
+- **First action of any session:** `databricks auth profiles | grep 9cefok` must show `YES`.
+  If not, ask the user to run
+  `! databricks auth login https://fevm-serverless-9cefok.cloud.databricks.com --profile 9cefok`
+  and wait — nothing works without it.
+
 - **Don't regenerate or modify data** — `serverless_9cefok_catalog.monday_morning` is loaded and
   verified. Regeneration (`cd data && uv run python generate.py`) only if the schema is damaged.
 - **Don't edit** `requirements/`, `BUILD-SPEC.md`, `data/`, or `extraction/` during a build run.

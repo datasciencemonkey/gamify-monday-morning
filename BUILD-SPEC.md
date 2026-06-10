@@ -32,6 +32,12 @@ brand.databricks.com grammar).
   Tools: `genie_ask(question, conversation_id?)` + `genie_poll_response(conversation_id, response_id)`.
   Polling transport: ask returns `status: in_progress` + IDs → poll every 2–5s until `completed`;
   full contract is documented verbatim in `requirements/databricks-resource-requirements.md`.
+  **Proven call pattern (no MCP client or session init needed)** — plain JSON-RPC over HTTP:
+  `POST <endpoint>` with headers `Authorization: Bearer <token>`, `Content-Type: application/json`,
+  `Accept: application/json, text/event-stream`; body
+  `{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"genie_ask","arguments":{"question":"..."}}}`
+  → read `result.structuredContent` for `status`/`conversation_id`/`response_id`, then the same
+  shape with `genie_poll_response`. Validated end-to-end against the monday_morning tables.
 - **Lakebase Postgres (app state):** dev instance
   `ep-aged-glade-d2zpfa2s.database.us-east-1.cloud.databricks.com`, db `databricks_postgres`,
   `sslmode=require`, login = Databricks identity (OAuth token as password). Key all rows by `user_id`.
@@ -99,6 +105,12 @@ lat/lon + Dec sales; underperformers = worst Dec vs-plan gap SKUs (display YoY %
 `dim_product.new_item_pct=100` ranked by Dec sales (display MoM %).
 
 ## 4. AI surfaces (AI-1..AI-4) — all through the Genie MCP
+
+**Auth mode (decided — don't deliberate):** for in-app Genie MCP and SQL calls, prefer the
+**on-behalf-of-user token** Databricks Apps forwards as `X-Forwarded-Access-Token` (add the
+needed user-authorization scopes at app create time); fall back to the app service principal's
+token where OBO isn't available. If Lakebase SP grants become friction during a timed run,
+degrade chat history to in-memory and leave a TODO — don't burn build minutes on it.
 
 Backend exposes: `POST /api/genie/ask {question, conversation_id?}` → proxies `genie_ask`, then
 server-side polls `genie_poll_response` and streams/relays progress + final markdown. Frontend:
