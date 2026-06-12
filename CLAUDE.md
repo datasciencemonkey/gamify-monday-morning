@@ -20,8 +20,12 @@ session cannot stop until the condition holds):
 ```
 /goal Build and deploy the Monday Morning CPG Retail Insights app by invoking the
 monday-morning-build skill and following it exactly, using dynamic workflows for the
-component build. Deploy to Databricks Apps (profile 9cefok), pass all 8 acceptance criteria
-in BUILD-SPEC §6, and finish executive-ready in under 30 minutes. ultracode
+component build (if the Workflow tool is gated, dispatch the same component prompts from
+app/workflows/components.js as parallel subagents instead). Deploy to Databricks Apps
+(profile 9cefok), pass all 8 acceptance criteria in BUILD-SPEC §6, and finish
+executive-ready in under 30 minutes. Stamp wall-clock timestamps at T0 (first action),
+components-done, deploy-done, and goal-achieved, and append the run to build-times.md.
+ultracode
 ```
 
 Saying just "monday morning build" also works (CLAUDE.md routes there), but you lose the

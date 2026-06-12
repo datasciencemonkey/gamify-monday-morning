@@ -4,6 +4,7 @@ Measured wall-clock runs of the full build from a pristine checkpoint to **goal 
 (deployed to Databricks Apps + all 8 BUILD-SPEC §6 acceptance criteria evidenced).
 Clock starts at the session's first action (auth check) and stops when the last
 acceptance criterion is verified against the **deployed** app.
+Each timed run appends one row to the table and its own phase-breakdown section below.
 
 | Run | Date | Start point | Deployed at | Goal achieved | Result |
 |---|---|---|---|---|---|

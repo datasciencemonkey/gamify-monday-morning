@@ -31,9 +31,14 @@ canonical UI/AI ground truth with reference screenshots in `requirements/assets/
    with the checked-in workflow: `Workflow({scriptPath: "app/workflows/components.js"})`
    (7 parallel agents + a tsc/build fixer; paths inside are absolute — sed them to the current
    checkout root first if it differs). Don't hand-write components; the workflow is proven.
+   **If the Workflow tool is gated** (no ultracode opt-in active), dispatch the SAME 7 prompts
+   from components.js as parallel Agent-tool subagents, then run tsc + `npm run build` yourself —
+   proven fallback (2026-06-11 run), ~1–2 min slower; tsc came back clean on the first pass.
 3. **Deploy (~4 min):** `cd app && ./deploy.sh`. It stages OUTSIDE the repo, deletes the
    workspace folder, re-imports, deploys, prints the URL.
 4. **Verify (~2 min):** see Verification below. Optional deep QA: `app/workflows/critique.js`.
+5. **Receipts:** stamp wall-clock times at T0 (first action), components-done, deploy-done, and
+   goal-achieved as you go, and append the run (summary row + phase table) to `build-times.md`.
 
 ## THE GOTCHAS (symptom → cause → fix)
 
@@ -77,6 +82,12 @@ canonical UI/AI ground truth with reference screenshots in `requirements/assets/
     executive-ready is acceptance criterion 8.
 12. **Stop hook / timing** → the 30-minute condition is satisfiable only by the runbook above;
     do NOT add a critique workflow inside the timed window (it's the optional post-gate).
+13. **Verify curls return the SPA's index.html instead of JSON** → you hit a POST route with
+    GET — FastAPI's catch-all serves the SPA for any unknown GET path → `/api/genie/poll` and
+    `/api/brief` are **POST with JSON bodies**; suggested questions = GET
+    `/api/suggested-questions`; movers rows use `product_name/category/sku_id/sales/pct`.
+    Copy the Verification curls below verbatim (this cost run 2 ~4 min). Also: a Genie verify
+    turn can run **~6 min**, beyond the 70–260 s norm — poll to a terminal status, don't bail.
 
 ## Verification (deployed)
 
@@ -88,7 +99,12 @@ curl -s -H "Authorization: Bearer $TOKEN" $APP/api/metrics/exec-kpis | head -c 1
 # total_sales must be 2401623; underperformers list must start Cling Wrap 747.5
 curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{"question":"What are total sales by category this month?"}' $APP/api/genie/ask
-# status in_progress + IDs → poll /api/genie/poll until completed; answer must cite monday_morning
+# → {"status":"in_progress","conversation_id":C,"response_id":R} — then poll (POST, not GET):
+curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"conversation_id":"C","response_id":"R"}' $APP/api/genie/poll
+# every 5 s until status != in_progress (can take ~6 min); answer must cite monday_morning
+curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{}' $APP/api/brief
+# headline + 6 chips + detail + provenance ; suggested: GET $APP/api/suggested-questions → 10 items
 ```
 
 8 acceptance criteria: BUILD-SPEC §6. Data regeneration (only if schema damaged):
